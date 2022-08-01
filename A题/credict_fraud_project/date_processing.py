@@ -6,12 +6,15 @@ from sklearn.preprocessing import StandardScaler
 # from chart_studio import plotly as py
 import plotly.graph_objs as go
 from plotly.offline import iplot, init_notebook_mode
+import plotly.graph_objects as go
 # import cufflinks
 # cufflinks.go_offline(connected=True)
 # init_notebook_mode(connected=True)
 from sklearn.model_selection import train_test_split
 import seaborn as sns
 import matplotlib.gridspec as gridspec
+from plotly.subplots import make_subplots
+
 
 
 from imblearn.over_sampling import SMOTE
@@ -82,10 +85,20 @@ def date_processing(c_path):
     # 修正了训练集标签的欺诈权重，测试集未做处理
     # 其原因为，测试集应反映真实情况
 
-def date_visualization(c_path):
-    date = pd.read_csv(c_path, engine='python')
-    #显示中文
-    plt.rcParams['font.sans-serif'] = ['SimHei']
+# def date_visualization(c_path):
+    # date = pd.read_csv(c_path, engine='python')
+    # #显示中文
+    # # plt.rcParams['font.sans-serif'] = ['SimHei']
+    # # corr = date.corr()
+    # #
+    # # plt.subplots(figsize=(12, 12))
+    # # sns.heatmap(corr,annot = True, vmax = 1,square = True,cmap = "Reds")
+    # # plt.savefig('./Pictures/相关性热力图')
+    # # plt.show()
+    #
+    # c_path = 'C:\\Users\\123\\Desktop\\2022年首届钉钉杯大学生大数据挑战赛初赛题目\\A题\\数据集\\card_transdata.csv'
+    # train_x, test_x, train_y, test_y, y, train_x_SMOTE, train_y_SMOTE, train_x_ada, train_y_ada = date_processing(
+    #     c_path=c_path)
     # counts = date['fraud'].value_counts()
     # plt.figure(figsize=(2 * 7, 1 * 7))
     # ax = plt.subplot(1, 2, 1)
@@ -97,14 +110,50 @@ def date_visualization(c_path):
     #
     # train_x, test_x, train_y, test_y, y = date_processing(c_path=c_path)
     #
-    # plt.figure(figsize=(2 * 7, 1 * 7))
-    # ax = plt.subplot(1, 2, 1)
-    # train_y.plot(kind='bar', ax=ax, color='y', label='SMOTE采样后train_y欺诈与非欺诈比例')
-    # ax = plt.subplot(1, 2, 2)
-    # test_y.plot(kind='bar', ax=ax, color='c', label='SMOTE采样后test_y欺诈与非欺诈比例')
-    # plt.savefig('./Pictures/SMOTE采样后欺诈与非欺诈比例图')
-    # plt.show()
+    # print(train_y_SMOTE.value_counts())
+    # print(train_y_ada.value_counts())
+
+    # plt.rcParams['font.family'] = 'FangSong'  # 设置字体为仿宋
+    # plt.rcParams['font.size'] = 10  # 设置字体的大小为10
+    # plt.rcParams['axes.unicode_minus'] = False  # 显示正、负的问题
     #
+    # plt.figure(figsize=(7 * 7, 3 * 7))
+    # ax1 = plt.subplot(121)
+    # ax1.bar(x=[0, 1], height=[638781, 638781], color='y')
+    # # ax = plt.subplot(1, 2, 2)
+    #
+    # ax1.set_title('SMOTE采样后train_y欺诈与非欺诈比例', fontproperties='SimHei', fontsize=20,
+    #               color='c')  # 为子图添加标题，fontproperties是设置标题的字体，fontsize是设置标题字体的大小，color是设置标题字体的颜色
+    # ax1.set_xlabel('欺诈与非欺诈')  # 为x轴添加标签
+    # ax1.set_ylabel('个数')  # 为y轴添加标签
+    # ax1.legend(loc='upper left')  # 设置图表图例在左上角
+    # ax1.grid(True)  # 绘制网格
+    #
+    # ax2 = plt.subplot(122)
+    # ax2.bar(x=[0, 1], height=[638781, 639043], color='c', label='ADASYN采样后train_y欺诈与非欺诈比例')
+    # ax2.set_title('ADASYN采样后train_y欺诈与非欺诈比例', fontproperties='SimHei', fontsize=20,
+    #               color='c')  # 为子图添加标题，fontproperties是设置标题的字体，fontsize是设置标题字体的大小，color是设置标题字体的颜色
+    # ax2.set_xlabel('欺诈与非欺诈')  # 为x轴添加标签
+    # ax2.set_ylabel('个数')  # 为y轴添加标签
+    # ax2.legend(loc='upper left')  # 设置图表图例在左上角
+    # ax2.grid(True)  # 绘制网格
+    # plt.savefig('./Pictures/使用不同采样方法后欺诈与非欺诈比例图')
+    # plt.show()
+
+    # fig = make_subplots(rows=1, cols=2, column_widths=[0.5, 0.5])
+    # y0 = [638781, 638781]
+    # y1 = [638781, 639043]
+    # fig.add_trace(go.Bar(x=[0, 1], y=[638781, 638781], text=y0, textposition="inside",
+    #                     name='SMOTE采样后train_y欺诈与非欺诈比例'),
+    #               row=1, col=1)
+    #
+    # fig.add_trace(go.Bar(x=[0, 1], y=[638781, 639043], text=y1, textposition="inside",
+    #                      name='ADASYN采样后train_y欺诈与非欺诈比例'),
+    #               row=1, col=2)
+    #
+    # # fig._image('./Pictures/使用不同采样方法后欺诈与非欺诈比例图')
+    # fig.show()
+
     # #k可视化特征重要性
     # rfc = RandomForestClassifier()
     # rfc = rfc.fit(train_x, train_y)
@@ -129,5 +178,5 @@ if __name__ == '__main__':
 
     start_time = time.time()
 
-    date_processing(c_path='C:\\Users\\123\\Desktop\\2022年首届钉钉杯大学生大数据挑战赛初赛题目\\A题\\数据集\\card_transdata.csv')
+    # date_processing(c_path='C:\\Users\\123\\Desktop\\2022年首届钉钉杯大学生大数据挑战赛初赛题目\\A题\\数据集\\card_transdata.csv')
     # date_visualization(c_path='C:\\Users\\123\\Desktop\\2022年首届钉钉杯大学生大数据挑战赛初赛题目\\A题\\数据集\\card_transdata.csv')
