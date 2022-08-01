@@ -69,3 +69,6 @@ userpath==1.8.0
 Werkzeug==2.1.2
 wrapt==1.14.1
 xmltodict==0.13.0
+
+seaborn~=0.11.2
+lightgbm~=3.3.2

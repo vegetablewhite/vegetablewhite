@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, matthews_corrcoef
 
 from date_processing import date_processing
 
@@ -64,19 +65,22 @@ def plot_learningCurve(history, epoch):
 def LSTM_building():
     np.random.seed(7)
     c_path = 'C:\\Users\\123\\Desktop\\2022年首届钉钉杯大学生大数据挑战赛初赛题目\\A题\\数据集\\card_transdata.csv'
-    train_x, test_x, train_y, test_y = date_processing(c_path=c_path)
+    train_x, test_x, train_y, test_y, y, train_x_SMOTE, train_y_SMOTE, train_x_ada, train_y_ada = date_processing(
+        c_path=c_path)
 
-    # X_train et X_val sont des dataframe qui contient les features
-    train_LSTM_X = train_x
-    val_LSTM_X = test_x
+
+
 
     ## Reshape input to be 3D [samples, timesteps, features] (format requis par LSTM)
-    train_LSTM_X = train_LSTM_X.values.reshape((train_LSTM_X.shape[0], 1, train_LSTM_X.shape[1]))
-    val_LSTM_X = val_LSTM_X.values.reshape((val_LSTM_X.shape[0], 1, val_LSTM_X.shape[1]))
+    train_x = train_x.values.reshape((train_x.shape[0], 1, train_x.shape[1]))
+    test_x = test_x.values.reshape((test_x.shape[0], 1, test_x.shape[1]))
+
+    train_x_SMOTE = train_x_SMOTE.values.reshape((train_x_SMOTE.shape[0], 1, train_x_SMOTE.shape[1]))
+    train_x_ada = train_x_ada.values.reshape((train_x_ada.shape[0], 1, train_x_ada.shape[1]))
+
 
     ## Recuperation des labels
-    train_LSTM_y = train_y
-    val_LSTM_y = test_y
+
 
     inputs1 = Input((1, 7))
     att_in = LSTM(50, return_sequences=True, dropout=0.3, recurrent_dropout=0.2)(inputs1)
@@ -85,8 +89,44 @@ def LSTM_building():
     outputs1 = Dense(1, activation='sigmoid', trainable=True)(att_out)
     model1 = Model(inputs1, outputs1)
     model1.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    history = model1.fit(train_LSTM_X, train_LSTM_y, epochs=20, batch_size=20000, validation_data=(val_LSTM_X, val_LSTM_y))
-    return history
+    # history = model1.fit(train_LSTM_X, train_LSTM_y, epochs=20, batch_size=20000, validation_data=(val_LSTM_X, val_LSTM_y))
+
+    train_list = [
+        {'X': train_x, 'Y': train_y, 'name': '原始数据'},
+        {'X': train_x_SMOTE, 'Y': train_y_SMOTE, 'name': 'SMOTE后'},
+        {'X': train_x_ada, 'Y': train_y_ada, 'name': 'ADASYN后'},
+    ]
+
+    final_dict_list = []
+    for one_dict in train_list:
+        name = one_dict['name']
+        lstm = model1()
+        lstm.fit(one_dict['X'], one_dict['Y'], epochs=20, batch_size=20000, validation_data=(test_x, test_y))
+        lstm_pred = lstm.predict(test_x)
+        one_dict['y_pred'] = lstm_pred
+        one_dict['model'] = lstm
+        n_errors = (lstm_pred != test_y).sum()
+        one_dict['预测错误个数'] = n_errors
+        acc = accuracy_score(test_y, lstm_pred)
+        prec = precision_score(test_y, lstm_pred)
+        rec = recall_score(test_y, lstm_pred)
+        f1 = f1_score(test_y, lstm_pred)
+        MCC = matthews_corrcoef(test_y, lstm_pred)
+        one_final_dict = {
+            'name': one_dict['name'],
+            '预测错误个数': n_errors,
+            '准确率': acc,
+            '精确度': prec,
+            '召回率': rec,
+            'F1-Score': f1,
+            'Matthews相关系数': MCC
+        }
+
+        final_dict_list.append(one_final_dict)
+    print(final_dict_list)
+    return final_dict_list
+
+
 
 
 if __name__ == '__main__':
@@ -95,7 +135,7 @@ if __name__ == '__main__':
     start_time = time.time()
     epochs = 20
     history = LSTM_building()
-    plot_learningCurve(history, epochs)
+    # plot_learningCurve(history, epochs)
 
 
 

@@ -16,6 +16,8 @@ import matplotlib.gridspec as gridspec
 
 from imblearn.over_sampling import SMOTE
 
+from imblearn.over_sampling import ADASYN
+
 
 def date_processing(c_path):
     date = pd.read_csv(c_path, engine='python')
@@ -27,9 +29,9 @@ def date_processing(c_path):
     #标准化过程
     scaler_data = date.iloc[:, 0:3]
     scaler = StandardScaler()
-    scaler.fit(scaler_data)
+    # scaler.fit(scaler_data)
 
-    std_data = scaler.transform(scaler_data)
+    std_data = scaler.fit_transform(scaler_data)
     #生成新的数据集,对列名进行修改
     date1 = pd.DataFrame(std_data).join(date.iloc[:, 3:8])
 
@@ -60,8 +62,18 @@ def date_processing(c_path):
     # 由于欺诈与未欺诈样本数量相差较大，需要处理非均衡样本
     # 使用SMOTE来对欺诈性数据进行抽样。
     # SMOTE将基于我们在原始数据集中已经拥有的欺诈数据，综合生成更多的欺诈数据样本
-    train_x, train_y = SMOTE().fit_resample(train_x, train_y)
-    return train_x, test_x, train_y, test_y, y
+    #1)使用SMOTE方法
+    train_x_SMOTE, train_y_SMOTE = SMOTE().fit_resample(train_x, train_y)
+
+
+    #2）使用ADASYN 方法
+    ada = ADASYN(random_state=42)
+    train_x_ada, train_y_ada = ada.fit_resample(train_x, train_y)
+    # print(train_y_ada.value_counts())
+    # print(train_x, test_x, train_y, test_y, y, train_x_SMOTE, train_y_SMOTE, train_x_ada, train_y_ada)
+
+
+    return train_x, test_x, train_y, test_y, y, train_x_SMOTE, train_y_SMOTE, train_x_ada, train_y_ada
 
 
     # y.value_counts()
@@ -106,25 +118,7 @@ def date_visualization(c_path):
     # plt.savefig('./Pictures/features_importances of credict_fraud')
     # plt.show()
 
-    #查看各个变量与欺诈与非欺诈之间是否存在联系
-    features = [x for x in date.columns
-                if x not in ['fraud']]
-    plt.figure(figsize=(15, 30*5))
-    gs = gridspec.GridSpec(7, 1)
 
-    import warnings
-    warnings.filterwarnings('ignore')
-    for i, cn in enumerate(date[features]):
-        ax = plt.subplot(gs[i])
-        sns.distplot(date[cn][date['fraud'] == 1], bins=50, color='red')
-        sns.distplot(date[cn][date['fraud'] == 0], bins=50, color='green')
-        ax.set_xlabel('')
-        ax.set_title('直方图：' + str(cn))
-    plt.savefig('./Pictures/各个变量与fraud的关系.png', transparent=False, bbox_inches='tight')
-    plt.show()
-    # 红色表示欺诈，绿色表示正常
-    # 两个分布的交叉面积越大，欺诈与非欺诈的区分度最小；
-    # 两个分布的交叉面积越小，则该变量对因变量的影响越大
 
 
 
@@ -135,5 +129,5 @@ if __name__ == '__main__':
 
     start_time = time.time()
 
-    # date_processing(c_path='C:\\Users\\123\\Desktop\\2022年首届钉钉杯大学生大数据挑战赛初赛题目\\A题\\数据集\\card_transdata.csv')
-    date_visualization(c_path='C:\\Users\\123\\Desktop\\2022年首届钉钉杯大学生大数据挑战赛初赛题目\\A题\\数据集\\card_transdata.csv')
+    date_processing(c_path='C:\\Users\\123\\Desktop\\2022年首届钉钉杯大学生大数据挑战赛初赛题目\\A题\\数据集\\card_transdata.csv')
+    # date_visualization(c_path='C:\\Users\\123\\Desktop\\2022年首届钉钉杯大学生大数据挑战赛初赛题目\\A题\\数据集\\card_transdata.csv')
